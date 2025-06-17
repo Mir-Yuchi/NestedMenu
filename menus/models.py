@@ -32,12 +32,17 @@ class MenuItem(models.Model):
     def get_ancestors(self):
         """
         Returns a list of all ancestor MenuItems, starting from the parent up to the root.
+        Includes cycle detection to prevent infinite loops.
         """
         ancestors = []
+        visited = set()
         node = self.parent
-        while node:
+
+        while node and node.id not in visited:
+            visited.add(node.id)
             ancestors.insert(0, node)
             node = node.parent
+
         return ancestors
 
     def get_children(self):
@@ -48,6 +53,8 @@ class MenuItem(models.Model):
         """
         Try to reverse() the stored string; if that fails, treat it as a literal URL.
         """
+        if self.url.startswith("/"):
+            return self.url
         try:
             return reverse(self.url)
         except (NoReverseMatch, ValueError):
@@ -57,7 +64,21 @@ class MenuItem(models.Model):
         """
         Ensure that a MenuItem cannot be its own ancestor.
         """
-        ancestors = self.get_ancestors()
-        if self in ancestors:
-            raise ValueError("A MenuItem cannot be its own ancestor.")
+        if self.parent:
+            if self.parent == self:
+                raise ValueError("A MenuItem cannot be its own parent.")
+
+            visited = set()
+            node = self.parent
+
+            if self.id:
+                visited.add(self.id)
+
+            while node and node.id not in visited:
+                visited.add(node.id)
+                node = node.parent
+
+            if node and node.id in visited:
+                raise ValueError("A MenuItem cannot be its own ancestor.")
+
         super().save(*args, **kwargs)
