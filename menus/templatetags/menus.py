@@ -65,7 +65,7 @@ def draw_menu(context, menu_name):
                 css.append("active")
             if node.id in to_expand:
                 css.append("open")
-            class_attr = f' class="{' '.join(css)}"' if css else ""
+            class_attr = f' class="{" ".join(css)}"' if css else ""
             has_children = node.id in children and children[node.id]
             toggle_class = "menu-toggle" if has_children else ""
             html.append(f"<li{class_attr}>")
