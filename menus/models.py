@@ -52,3 +52,12 @@ class MenuItem(models.Model):
             return reverse(self.url)
         except (NoReverseMatch, ValueError):
             return self.url
+
+    def save(self, *args, **kwargs):
+        """
+        Ensure that a MenuItem cannot be its own ancestor.
+        """
+        ancestors = self.get_ancestors()
+        if self in ancestors:
+            raise ValueError("A MenuItem cannot be its own ancestor.")
+        super().save(*args, **kwargs)
