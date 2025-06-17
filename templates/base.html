@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NestedMenu{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.menu-toggle').forEach(toggle => {
+                toggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const submenu = toggle.nextElementSibling;
+                    submenu.classList.toggle('hidden');
+                    toggle.classList.toggle('rotate-90');
+                });
+            });
+        });
+    </script>
+    <style>
+        .menu-container ul li a {
+            transition: all 0.3s ease;
+        }
+        .menu-container ul li a:hover {
+            background-color: #f97316;
+            color: white;
+            transform: scale(1.05);
+        }
+        .menu-container .active > a {
+            background: linear-gradient(to right, #3b82f6, #8b5cf6);
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .menu-container .open > ul {
+            display: block;
+            animation: slideDown 0.3s ease-in-out;
+        }
+        .menu-container ul ul {
+            margin-left: 1.5rem;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .menu-toggle::before {
+            content: '▶';
+            display: inline-block;
+            margin-right: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+        .menu-toggle.rotate-90::before {
+            transform: rotate(90deg);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-100 to-purple-100 min-h-screen font-sans">
+    <header class="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+            <h1 class="text-3xl font-extrabold tracking-tight">{% block header %}NestedMenu{% endblock %}</h1>
+            <a href="{% url 'admin:index' %}" class="text-sm bg-white text-blue-600 px-4 py-2 rounded-full hover:bg-blue-100 transition">Админ-панель</a>
+        </div>
+    </header>
+    <main class="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8 flex flex-col md:flex-row gap-6">
+        <aside class="menu-container w-full md:w-64 bg-white rounded-xl shadow-xl p-4">
+            {% block menu %}
+                {% load menus %}
+                {% draw_menu 'main' %}
+            {% endblock %}
+        </aside>
+        <div class="flex-1 bg-white rounded-xl shadow-xl p-6">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>
+    <footer class="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-inner mt-8">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm">© 2025 NestedMenu.</p>
+        </div>
+    </footer>
+</body>
+</html>
