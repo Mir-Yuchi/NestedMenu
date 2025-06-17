@@ -1,5 +1,4 @@
 version: '3.9'
-
 services:
   db:
     image: postgres:15
@@ -8,20 +7,39 @@ services:
       - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   web:
     build:
       context: .
       dockerfile: Dockerfile
-    command: gunicorn nestedmenu.wsgi:application --bind 0.0.0.0:8000
-    volumes:
-      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
     env_file:
       - .env
+    volumes:
+      - .:/app
     ports:
       - "8000:8000"
-    depends_on:
-      - db
+    command: >
+      sh -c "
+        echo 'Waiting for Postgres…';
+        for i in \$(seq 1 30); do
+          nc -z \$DB_HOST \$DB_PORT && echo 'Postgres is up!' && break;
+          echo '…'; sleep 1;
+        done;
+        echo 'Applying migrations…';
+        python manage.py migrate --noinput;
+        echo 'Collecting static…';
+        python manage.py collectstatic --noinput;
+        echo 'Starting Gunicorn…';
+        exec gunicorn nestedmenu.wsgi:application --bind 0.0.0.0:8000
+      "
 
 volumes:
   postgres_data:
