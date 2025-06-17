@@ -2,6 +2,7 @@ from collections import defaultdict
 
 from django import template
 from django.core.cache import cache
+from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 from menus.models import MenuItem
@@ -65,7 +66,9 @@ def draw_menu(context, menu_name):
             class_attr = f' class="{' '.join(css)}"' if css else ""
 
             html.append(f"<li{class_attr}>")
-            html.append(f'<a href="{resolved[node.id]}">{node.title}</a>')
+            html.append(
+                f'<a href="{escape(resolved[node.id])}">{escape(node.title)}</a>'
+            )
             if node.id in to_expand:
                 html.append(render_branch(node.id))
             html.append("</li>")
