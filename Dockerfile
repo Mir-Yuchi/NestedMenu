@@ -1,36 +1,32 @@
-# Dockerfile
+FROM python:3.11-slim
 
-# 1. Use the official Python base image matching our runtime
-FROM python:3.13.5-slim
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-# 2. Set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-
-# 3. Set workdir
-WORKDIR /app
-
-# 4. Install system dependencies
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends \
+    && apt-get install -y --no-install-recommends \
        build-essential \
        libpq-dev \
-  && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
 
-# 5. Copy only requirements to leverage Docker cache
+WORKDIR /app
+
+ARG POETRY_VERSION=1.8.1
+RUN pip install --upgrade pip \
+    && pip install "poetry==$POETRY_VERSION"
+
 COPY pyproject.toml poetry.lock /app/
+RUN poetry config virtualenvs.create false \
+    && poetry install --no-interaction --no-ansi
 
-# 6. Install Poetry & dependencies
-RUN pip install --no-cache-dir poetry \
-  && poetry config virtualenvs.create false \
-  && poetry install --without dev --no-root --no-interaction --no-ansi
-
-# 7. Copy project code
 COPY . /app/
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
-# 8. Collect static (optional if you have static files)
-RUN python manage.py collectstatic --no-input
+RUN python manage.py collectstatic --noinput
 
-# 9. Expose port & define default command
+ENTRYPOINT ["/app/entrypoint.sh"]
+
 EXPOSE 8000
+
 CMD ["gunicorn", "nestedmenu.wsgi:application", "--bind", "0.0.0.0:8000"]
