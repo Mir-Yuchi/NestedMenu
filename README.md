@@ -1,6 +1,6 @@
 # NestedMenu
 
-NestedMenu — это приложение Django для рендеринга вложенных меню с эффективными запросами к базе данных и кэшированием.
+NestedMenu — это гибкое Django‑приложение для создания и рендеринга многоуровневых (вложенных) меню с минимальным числом запросов к базе и встроенным кэшированием.
 
 ## Содержание
 
@@ -8,8 +8,7 @@ NestedMenu — это приложение Django для рендеринга в
 - [Установка](#установка)
 - [Использование](#использование)
 - [Тестирование](#тестирование)
-- [Лицензия](#лицензия)
-- [Вклад](#вклад)
+
 
 ## Особенности
 
@@ -27,7 +26,7 @@ NestedMenu — это приложение Django для рендеринга в
 
 1. **Клонировать репозиторий**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Mir-Yuchi/NestedMenu.git
    cd NestedMenu
    ```
 
@@ -53,13 +52,14 @@ NestedMenu — это приложение Django для рендеринга в
    DB_NAME=your_database_name
    DB_USER=your_database_user
    DB_PASSWORD=your_database_password
-   DB_HOST=localhost
+   DB_HOST=localhost или db # если используете Docker
    DB_PORT=5432
    ```
 
-5. **Применить миграции**
+5. **Примените миграции и создайте суперпользователя:**
    ```bash
-   python manage.py migrate
+   poetry run python manage.py migrate
+   poetry run python manage.py createsuperuser
    ```
 
 6. **Запустить сервер**
@@ -76,6 +76,7 @@ NestedMenu — это приложение Django для рендеринга в
       docker-compose up --build
    ```
 
+
 ## Использование
 
 - **Создание пунктов меню**
@@ -88,8 +89,15 @@ NestedMenu — это приложение Django для рендеринга в
 - **Рендеринг меню**
   Используйте пользовательский тэг шаблона в ваших шаблонах:
   ```html
-  {% load menus %}
-  {% draw_menu 'main' %}
+    {% load menus %}
+    <!DOCTYPE html>
+    <html>
+    <head><title>Мой сайт</title></head>
+    <body>
+        {% draw_menu 'main' %}
+        <!-- остальная разметка -->
+    </body>
+    </html>
   ```
 
 - **Стилизация**
